@@ -15,8 +15,8 @@ extern "C" {
 }
 using namespace vex;
 
-// this class extends an special class used for 3wire ports
-class addressable_led : private __tridevice {
+// A class for the addressable led
+class addressable_led {
     public:
       static const int32_t MAX_LEDS = 64;
 
@@ -24,9 +24,14 @@ class addressable_led : private __tridevice {
       uint32_t maxled = MAX_LEDS;
       uint32_t ledbuffer[MAX_LEDS];
       uint32_t tmpbuffer[MAX_LEDS];
-
+       int32_t _index;
+       int32_t _id;
+  
     public:
-      addressable_led( triport::port &port, int32_t max = MAX_LEDS ) : __tridevice( port, triportType::digitalOutput ) {
+      addressable_led( triport::port &port, int32_t max = MAX_LEDS ) {
+        port.type( triportType::digitalOutput );
+        _index = port.index();
+        _id = port.id();
         maxled = max <= MAX_LEDS ? max : MAX_LEDS;
       }
 
@@ -40,12 +45,14 @@ class addressable_led : private __tridevice {
       }
 
       void set( uint32_t *pData, uint32_t nOffset, uint32_t nLength, uint32_t options ) {
-        vexAdiAddrLedSet( _index(), _id(), pData, nOffset, nLength, options );
+        vexAdiAddrLedSet( _index, _id, pData, nOffset, nLength, options );
 
-        // make copy
-        uint32_t *p = pData;
-        for(int i=nOffset;i<nLength && i<maxled;i++)
-          ledbuffer[i] = *p++;
+        // make copy if different buffer
+        if( pData != ledbuffer ) {
+          uint32_t *p = pData;
+          for(int i=nOffset;i<nLength && i<maxled;i++)
+            ledbuffer[i] = *p++;
+        }
       }
 
       void set( color col = color(0x000000) ) {
@@ -80,4 +87,3 @@ class addressable_led : private __tridevice {
         return maxled;
       }
 };
-

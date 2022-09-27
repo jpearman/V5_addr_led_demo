@@ -13,7 +13,7 @@
 vex::brain       Brain;
 
 // instance of the addressable led on external 3wire extender port A
-// we limit to 60 leds max
+// we limit to 60 leds max for this strip
 addressable_led addrled(vex::triport(PORT20).A, 60 );
 
 // local storage for some pixel data
